@@ -1,0 +1,218 @@
+<UserControl x:Class="WpfHarness.Views.ChatView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mdxam="clr-namespace:MdXaml;assembly=MdXaml"
+             xmlns:vm="clr-namespace:WpfHarness.ViewModels"
+             Background="{DynamicResource WindowBgBrush}">
+    <UserControl.Resources>
+        <!-- 用户消息：右对齐气泡 -->
+        <DataTemplate x:Key="UserTemplate" DataType="{x:Type vm:ChatMessageItem}">
+            <Border Background="#26262E" BorderBrush="#30303A" BorderThickness="1"
+                    CornerRadius="12" Padding="13,9" MaxWidth="520"
+                    HorizontalAlignment="Right" Margin="80,2,28,14">
+                <TextBlock Text="{Binding Text}" TextWrapping="Wrap" Foreground="{DynamicResource TextPrimaryBrush}"
+                           FontSize="13.5" LineHeight="21" />
+            </Border>
+        </DataTemplate>
+
+        <!-- 助手：无气泡 Markdown -->
+        <DataTemplate x:Key="AssistantTemplate" DataType="{x:Type vm:ChatMessageItem}">
+            <Grid Margin="28,2,48,14">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <mdxam:MarkdownScrollViewer Grid.Row="0" Markdown="{Binding Text, Mode=OneWay}"
+                                            MarkdownStyle="{StaticResource MdStyle}" />
+                <TextBlock Grid.Row="1" Text="●" FontSize="9" Margin="0,5,0,0" HorizontalAlignment="Left"
+                           Foreground="{DynamicResource AccentBrush}"
+                           Visibility="{Binding IsStreaming, Converter={StaticResource BoolToVis}}">
+                    <TextBlock.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.15"
+                                                     Duration="0:0:0.7" AutoReverse="True" RepeatBehavior="Forever" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </TextBlock.Triggers>
+                </TextBlock>
+            </Grid>
+        </DataTemplate>
+
+        <!-- 工具调用卡片 -->
+        <DataTemplate x:Key="ToolCallTemplate" DataType="{x:Type vm:ChatMessageItem}">
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource CardBorderBrush}"
+                    BorderThickness="1" CornerRadius="10" Margin="28,2,48,14" Padding="11,8" MaxWidth="640"
+                    HorizontalAlignment="Left">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="20" Height="20" CornerRadius="6"
+                                Background="{DynamicResource AccentSubtleBrush}"
+                                BorderBrush="{DynamicResource AccentBorderBrush}" BorderThickness="1">
+                            <TextBlock Text="🔧" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="{Binding ToolName}" FontSize="12" FontWeight="SemiBold" Margin="8,0,0,0"
+                                   Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                        <Border Margin="10,0,0,0" VerticalAlignment="Center">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="#22222A" />
+                                    <Setter Property="CornerRadius" Value="5" />
+                                    <Setter Property="Padding" Value="6,2" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource AccentSubtleBrush}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsToolError}" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource DangerSubtleBrush}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <TextBlock FontSize="10" VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="已完成" />
+                                        <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                                <Setter Property="Text" Value="运行中" />
+                                                <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsToolError}" Value="True">
+                                                <Setter Property="Text" Value="失败" />
+                                                <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="{Binding ToolArgs, StringFormat=参数  {0}}" FontSize="11"
+                               FontFamily="Cascadia Mono, Consolas" Foreground="{DynamicResource TextTertiaryBrush}"
+                               TextWrapping="Wrap" Margin="0,7,0,0"
+                               Visibility="{Binding ToolArgs, Converter={StaticResource NonEmptyToVis}}" />
+                    <TextBlock Text="{Binding ToolResult, StringFormat=结果  {0}}" FontSize="11"
+                               FontFamily="Cascadia Mono, Consolas"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               TextWrapping="Wrap" Margin="0,4,0,0"
+                               Visibility="{Binding ToolResult, Converter={StaticResource NonEmptyToVis}}" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <!-- 错误 -->
+        <DataTemplate x:Key="ErrorTemplate" DataType="{x:Type vm:ChatMessageItem}">
+            <Border BorderBrush="{DynamicResource DangerBrush}" BorderThickness="1" CornerRadius="10"
+                    Padding="12,8" Margin="28,2,28,14" Background="{DynamicResource DangerSubtleBrush}"
+                    MaxWidth="640" HorizontalAlignment="Left">
+                <TextBlock Text="{Binding Text, StringFormat=⚠  {0}}" TextWrapping="Wrap"
+                           Foreground="{DynamicResource DangerBrush}" FontSize="12" />
+            </Border>
+        </DataTemplate>
+
+        <vm:ChatItemTemplateSelector x:Key="ItemTemplateSelector"
+                                     UserTemplate="{StaticResource UserTemplate}"
+                                     AssistantTemplate="{StaticResource AssistantTemplate}"
+                                     ToolCallTemplate="{StaticResource ToolCallTemplate}"
+                                     ErrorTemplate="{StaticResource ErrorTemplate}" />
+    </UserControl.Resources>
+
+    <DockPanel>
+        <!-- 会话头部 -->
+        <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="0,0,0,1"
+                Background="{DynamicResource SidebarBrush}" Padding="24,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding SelectedSession.Title}" FontSize="13" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis"
+                               MaxWidth="420" />
+                    <Border Margin="10,0,0,0" VerticalAlignment="Center"
+                            Background="{DynamicResource AccentSubtleBrush}" CornerRadius="5" Padding="6,2">
+                        <TextBlock Text="{Binding SelectedSession.Session.ModeId}" FontSize="10"
+                                   Foreground="{DynamicResource AccentBrush}" />
+                    </Border>
+                    <Border Margin="6,0,0,0" VerticalAlignment="Center" Background="#22222A"
+                            CornerRadius="5" Padding="6,2">
+                        <TextBlock Text="{Binding SelectedSession.ModelDisplay}" FontSize="10"
+                                   Foreground="{DynamicResource TextTertiaryBrush}" />
+                    </Border>
+                </StackPanel>
+                <Button Grid.Column="1" Content="⏹ 停止" FontSize="12" Padding="12,0" Cursor="Hand" Height="26"
+                        Command="{Binding StopCommand}"
+                        Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"
+                        Foreground="{DynamicResource DangerBrush}">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Bd" Background="Transparent" CornerRadius="8"
+                                    BorderBrush="{DynamicResource DangerBrush}" BorderThickness="1">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource DangerSubtleBrush}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- 输入区 -->
+        <Border DockPanel.Dock="Bottom" Background="Transparent" Padding="20,8,20,14">
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource CardBorderBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="10,8,8,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="ChatInput" Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
+                             Background="Transparent" BorderThickness="0"
+                             Foreground="{DynamicResource TextPrimaryBrush}" CaretBrush="{DynamicResource AccentBrush}"
+                             TextWrapping="Wrap" AcceptsReturn="True" FontSize="13.5" MaxHeight="140"
+                             VerticalScrollBarVisibility="Auto" Padding="4" KeyDown="ChatInput_KeyDown" />
+                    <Button Grid.Column="1" Width="32" Height="32" Margin="8,0,0,0" VerticalAlignment="Bottom"
+                            Cursor="Hand" Command="{Binding SendCommand}">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="Bd" Background="{DynamicResource AccentBrush}" CornerRadius="16">
+                                    <TextBlock Text="↑" Foreground="White" FontSize="15" FontWeight="Bold"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentHoverBrush}" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding InputText}" Value="">
+                                        <Setter Property="Opacity" Value="0.45" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </Grid>
+            </Border>
+        </Border>
+
+        <!-- 消息列表 -->
+        <ScrollViewer x:Name="MessagesScroll" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding SelectedSession.Items}"
+                          ItemTemplateSelector="{StaticResource ItemTemplateSelector}" Margin="0,10,0,4" />
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

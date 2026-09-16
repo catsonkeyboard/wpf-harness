@@ -1,0 +1,231 @@
+<UserControl x:Class="WpfHarness.Views.HomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:WpfHarness.Converters"
+             Background="{DynamicResource WindowBgBrush}">
+    <UserControl.Resources>
+        <c:InverseBoolConverter x:Key="InverseBoolConverter" />
+
+        <!-- 模式 chip -->
+        <Style x:Key="ModeChipItem" TargetType="ListBoxItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Bd" Background="Transparent" BorderBrush="{DynamicResource CardBorderBrush}"
+                                BorderThickness="1" CornerRadius="8" Padding="12,0" Height="28" Margin="0,0,6,0"
+                                Cursor="Hand">
+                            <TextBlock x:Name="Tx" Text="{Binding DisplayName}" FontSize="12"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource CardHoverBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentSubtleBrush}" />
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                <Setter TargetName="Tx" Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                                <Setter TargetName="Tx" Property="FontWeight" Value="SemiBold" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 发送圆形按钮 -->
+        <Style x:Key="SendButton" TargetType="Button">
+            <Setter Property="Width" Value="34" />
+            <Setter Property="Height" Value="34" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Command" Value="{Binding SendCommand}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{DynamicResource AccentBrush}" CornerRadius="17">
+                            <TextBlock Text="↑" Foreground="White" FontSize="16" FontWeight="Bold"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentHoverBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding InputText}" Value="">
+                    <Setter Property="Opacity" Value="0.45" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- 快捷卡片 -->
+        <Style x:Key="QuickCard" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{DynamicResource SurfaceBrush}" BorderBrush="#26262E"
+                                BorderThickness="1" CornerRadius="10" Padding="12,9" Margin="0,0,8,8"
+                                HorizontalAlignment="Stretch">
+                            <StackPanel>
+                                <TextBlock x:Name="Title" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}"
+                                           FontWeight="SemiBold" />
+                                <TextBlock x:Name="Desc" FontSize="11" Margin="0,2,0,0"
+                                           Foreground="{DynamicResource TextTertiaryBrush}" />
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBorderBrush}" />
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource ElevatedBrush}" />
+                                <Setter TargetName="Title" Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="0.5*" />
+        </Grid.RowDefinitions>
+
+        <!-- 品牌 + 问候 -->
+        <StackPanel Grid.Row="0" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,36">
+            <Border Width="44" Height="44" CornerRadius="12" HorizontalAlignment="Center"
+                    Background="{DynamicResource AccentSubtleBrush}"
+                    BorderBrush="{DynamicResource AccentBorderBrush}" BorderThickness="1">
+                <TextBlock Text="⚡" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <TextBlock Text="{Binding Greeting}" FontSize="24" FontWeight="SemiBold" HorizontalAlignment="Center"
+                       Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,16,0,0" />
+            <TextBlock Text="选择模式与模型，开始你的第一个任务" FontSize="12.5" HorizontalAlignment="Center"
+                       Foreground="{DynamicResource TextTertiaryBrush}" Margin="0,7,0,0" />
+        </StackPanel>
+
+        <!-- 输入卡 -->
+        <Border Grid.Row="1" Width="640" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,36,0,0"
+                Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource CardBorderBrush}"
+                BorderThickness="1" CornerRadius="14" Padding="14,12,14,10"
+                x:Name="InputCard">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- 模式 + 模型 -->
+                <Grid Grid.Row="0" Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ListBox ItemsSource="{Binding Modes}" SelectedItem="{Binding SelectedMode}"
+                             ItemContainerStyle="{StaticResource ModeChipItem}"
+                             Background="Transparent" BorderThickness="0">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                    </ListBox>
+                    <ComboBox Grid.Column="1" ItemsSource="{Binding Providers}"
+                              SelectedItem="{Binding SelectedProvider}" DisplayMemberPath="Name"
+                              MinWidth="180" Height="28" VerticalAlignment="Center" FontSize="12" />
+                </Grid>
+
+                <!-- 输入框 -->
+                <Grid Grid.Row="1">
+                    <TextBox x:Name="InputBox" Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
+                             Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextPrimaryBrush}"
+                             CaretBrush="{DynamicResource AccentBrush}" TextWrapping="Wrap" AcceptsReturn="True"
+                             MaxLength="8000" VerticalScrollBarVisibility="Auto" FontSize="14"
+                             MinHeight="60" MaxHeight="180" VerticalContentAlignment="Top" Margin="0,2"
+                             KeyDown="InputBox_KeyDown" />
+                    <TextBlock Text="给 Harness 发送消息…" IsHitTestVisible="False"
+                               Foreground="{DynamicResource TextTertiaryBrush}" FontSize="14"
+                               VerticalAlignment="Top" Margin="1,4,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=InputBox}" Value="">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+
+                <!-- 底部操作行 -->
+                <Border Grid.Row="2" BorderBrush="#26262E" BorderThickness="0,1,0,0" Margin="0,8,0,0"
+                        Padding="0,8,0,0">
+                    <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Content="＋" FontSize="13" Width="28" Height="28"
+                            Style="{StaticResource GhostButton}" Tag="8"
+                            ToolTip="附件（即将支持）" IsEnabled="False" Opacity="0.4" />
+                    <TextBlock Grid.Column="1" Text="Enter 发送 · Shift+Enter 换行" FontSize="10.5"
+                               Foreground="{DynamicResource TextTertiaryBrush}" HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                    <Button Grid.Column="2" Style="{StaticResource SendButton}" />
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- 快捷卡片 -->
+        <UniformGrid Grid.Row="2" Columns="4" Width="640" HorizontalAlignment="Center" Margin="0,16,0,0">
+            <Button Style="{StaticResource QuickCard}" Command="{Binding QuickPromptCommand}"
+                    CommandParameter="帮我把这周的工作整理成一份周报，重点标注进展和风险">
+                <Button.Content>
+                    <StackPanel>
+                        <TextBlock Text="🕐 周报总结" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold" />
+                        <TextBlock Text="整理本周进展与风险" FontSize="11" Margin="0,2,0,0" Foreground="{DynamicResource TextTertiaryBrush}" />
+                    </StackPanel>
+                </Button.Content>
+            </Button>
+            <Button Style="{StaticResource QuickCard}" Command="{Binding QuickPromptCommand}"
+                    CommandParameter="这个报错是什么原因，该怎么修：NullReferenceException at Main()">
+                <Button.Content>
+                    <StackPanel>
+                        <TextBlock Text="⚠️ 报错修复" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold" />
+                        <TextBlock Text="粘贴报错信息速查原因" FontSize="11" Margin="0,2,0,0" Foreground="{DynamicResource TextTertiaryBrush}" />
+                    </StackPanel>
+                </Button.Content>
+            </Button>
+            <Button Style="{StaticResource QuickCard}" Command="{Binding QuickPromptCommand}"
+                    CommandParameter="帮我列一个技术方案分享 PPT 的大纲，20 页以内">
+                <Button.Content>
+                    <StackPanel>
+                        <TextBlock Text="🖥 PPT 制作" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold" />
+                        <TextBlock Text="生成分享大纲与要点" FontSize="11" Margin="0,2,0,0" Foreground="{DynamicResource TextTertiaryBrush}" />
+                    </StackPanel>
+                </Button.Content>
+            </Button>
+            <Button Style="{StaticResource QuickCard}" Command="{Binding QuickPromptCommand}"
+                    CommandParameter="现在几点了？">
+                <Button.Content>
+                    <StackPanel>
+                        <TextBlock Text="🛠 试试工具" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold" />
+                        <TextBlock Text="ReAct 模式调用工具演示" FontSize="11" Margin="0,2,0,0" Foreground="{DynamicResource TextTertiaryBrush}" />
+                    </StackPanel>
+                </Button.Content>
+            </Button>
+        </UniformGrid>
+    </Grid>
+</UserControl>
