@@ -11,6 +11,8 @@
                 <ResourceDictionary Source="pack://application:,,,/Resources/MdStyle.xaml" />
                 <ui:ThemesDictionary Theme="Dark" />
                 <ui:ControlsDictionary />
+                <!-- 共享控件样式（Keycap / Badge / GhostButton / FieldTextBox / SuggestionCard …） -->
+                <ResourceDictionary Source="pack://application:,,,/Resources/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <!-- 共享转换器 -->
@@ -19,6 +21,7 @@
             <c:InverseBoolConverter x:Key="InverseBoolConverter" />
             <BooleanToVisibilityConverter x:Key="BoolToVis" />
             <c:RelativeTimeConverter x:Key="RelativeTime" />
+            <c:EmptyToVisibilityConverter x:Key="EmptyToVis" />
 
             <!-- ===== 色板：三级表面 + 三级文字 + 橙色体系 ===== -->
             <Color x:Key="WindowBgColor">#101014</Color>
@@ -36,9 +39,18 @@
             <SolidColorBrush x:Key="CardBorderBrush" Color="{StaticResource BorderColor}" />
             <SolidColorBrush x:Key="CardHoverBrush" Color="{StaticResource HoverColor}" />
 
+            <!-- 语义化补充 token：消除页面里的硬编码颜色 -->
+            <SolidColorBrush x:Key="UserBubbleBrush" Color="#26262E" />
+            <SolidColorBrush x:Key="UserBubbleBorderBrush" Color="#30303A" />
+            <SolidColorBrush x:Key="TextOnAccentBrush" Color="#FFFFFF" />
+            <!-- 叠在主色块上的半透明白（快捷键标签底色/描边） -->
+            <SolidColorBrush x:Key="AccentOverlayBrush" Color="#33FFFFFF" />
+            <SolidColorBrush x:Key="AccentOverlayBorderBrush" Color="#55FFFFFF" />
+            <SolidColorBrush x:Key="AccentOverlayTextBrush" Color="#FFEBD9" />
+
             <SolidColorBrush x:Key="TextPrimaryBrush" Color="#EDEDF0" />
             <SolidColorBrush x:Key="TextSecondaryBrush" Color="#A4A4AE" />
-            <SolidColorBrush x:Key="TextTertiaryBrush" Color="#6A6A74" />
+            <SolidColorBrush x:Key="TextTertiaryBrush" Color="#92929C" />
 
             <SolidColorBrush x:Key="AccentBrush" Color="#F97316" />
             <SolidColorBrush x:Key="AccentHoverBrush" Color="#FB8C3C" />
@@ -46,6 +58,21 @@
             <SolidColorBrush x:Key="AccentBorderBrush" Color="#4A2E14" />
             <SolidColorBrush x:Key="DangerBrush" Color="#E5534B" />
             <SolidColorBrush x:Key="DangerSubtleBrush" Color="#2A1717" />
+
+            <!-- 覆盖 WPF-UI 控件强调色：统一为橙色体系（对话框主按钮 / RadioButton / 选择态） -->
+            <Color x:Key="SystemAccentColor">#F97316</Color>
+            <Color x:Key="SystemAccentColorPrimary">#F97316</Color>
+            <Color x:Key="SystemAccentColorSecondary">#FB8C3C</Color>
+            <Color x:Key="SystemAccentColorTertiary">#C26430</Color>
+            <SolidColorBrush x:Key="SystemAccentColorBrush" Color="#F97316" />
+            <SolidColorBrush x:Key="SystemAccentColorPrimaryBrush" Color="#F97316" />
+            <SolidColorBrush x:Key="SystemAccentColorSecondaryBrush" Color="#FB8C3C" />
+            <SolidColorBrush x:Key="SystemAccentColorTertiaryBrush" Color="#C26430" />
+            <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#F97316" />
+            <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="#FB8C3C" />
+            <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#C26430" />
+            <SolidColorBrush x:Key="AccentTextFillColorPrimaryBrush" Color="#FB8C3C" />
+            <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="#FFFFFF" />
 
             <!-- 全局字体 -->
             <Style TargetType="{x:Type Window}">
@@ -56,49 +83,7 @@
                 <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI, Microsoft YaHei UI" />
             </Style>
 
-            <!-- keycap 快捷键徽标 -->
-            <Style x:Key="Keycap" TargetType="Border">
-                <Setter Property="Background" Value="#22222A" />
-                <Setter Property="BorderBrush" Value="#33333C" />
-                <Setter Property="BorderThickness" Value="1" />
-                <Setter Property="CornerRadius" Value="4" />
-                <Setter Property="Padding" Value="5,1" />
-                <Setter Property="VerticalAlignment" Value="Center" />
-            </Style>
-
-            <!-- 小徽章 -->
-            <Style x:Key="Badge" TargetType="Border">
-                <Setter Property="Background" Value="#22222A" />
-                <Setter Property="CornerRadius" Value="5" />
-                <Setter Property="Padding" Value="6,2" />
-                <Setter Property="VerticalAlignment" Value="Center" />
-            </Style>
-
-            <!-- ghost 图标按钮 -->
-            <Style x:Key="GhostButton" TargetType="Button">
-                <Setter Property="Background" Value="Transparent" />
-                <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
-                <Setter Property="Cursor" Value="Hand" />
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="Button">
-                            <Border x:Name="Bd" Background="Transparent" CornerRadius="{TemplateBinding Tag}">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                  Margin="{TemplateBinding Padding}" />
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource CardHoverBrush}" />
-                                    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
-                                </Trigger>
-                                <Trigger Property="IsEnabled" Value="False">
-                                    <Setter Property="Opacity" Value="0.4" />
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
+            <!-- Keycap / Badge / GhostButton 等控件样式已迁移至 Resources/Styles.xaml -->
         </ResourceDictionary>
     </Application.Resources>
 </Application>

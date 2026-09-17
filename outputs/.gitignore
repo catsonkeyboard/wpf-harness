@@ -1,0 +1,7 @@
+# 离屏布局验证：只入库 LayoutCheck 源码；构建输出目录与渲染截图忽略
+ck/
+bk*/
+vv/
+verify*/
+app*/
+*.png

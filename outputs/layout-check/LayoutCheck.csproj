@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0-windows</TargetFramework><UseWPF>true</UseWPF><EnableDefaultCompileItems>false</EnableDefaultCompileItems></PropertyGroup>
+  <ItemGroup><Compile Include="LayoutCheck.cs" /><Page Include="../../src/WpfHarness/Resources/MdStyle.xaml" Link="Resources/MdStyle.xaml" /><Page Include="../../src/WpfHarness/Resources/Styles.xaml" Link="Resources/Styles.xaml" /><ProjectReference Include="../../src/WpfHarness/WpfHarness.csproj" /></ItemGroup>
+</Project>

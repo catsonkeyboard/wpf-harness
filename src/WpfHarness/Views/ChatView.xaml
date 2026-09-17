@@ -7,7 +7,8 @@
     <UserControl.Resources>
         <!-- 用户消息：右对齐气泡 -->
         <DataTemplate x:Key="UserTemplate" DataType="{x:Type vm:ChatMessageItem}">
-            <Border Background="#26262E" BorderBrush="#30303A" BorderThickness="1"
+            <Border Background="{DynamicResource UserBubbleBrush}" BorderBrush="{DynamicResource UserBubbleBorderBrush}"
+                    BorderThickness="1"
                     CornerRadius="12" Padding="13,9" MaxWidth="520"
                     HorizontalAlignment="Right" Margin="80,2,28,14">
                 <TextBlock Text="{Binding Text}" TextWrapping="Wrap" Foreground="{DynamicResource TextPrimaryBrush}"
@@ -58,7 +59,7 @@
                         <Border Margin="10,0,0,0" VerticalAlignment="Center">
                             <Border.Style>
                                 <Style TargetType="Border">
-                                    <Setter Property="Background" Value="#22222A" />
+                                    <Setter Property="Background" Value="{DynamicResource ElevatedBrush}" />
                                     <Setter Property="CornerRadius" Value="5" />
                                     <Setter Property="Padding" Value="6,2" />
                                     <Style.Triggers>
@@ -139,7 +140,7 @@
                         <TextBlock Text="{Binding SelectedSession.Session.ModeId}" FontSize="10"
                                    Foreground="{DynamicResource AccentBrush}" />
                     </Border>
-                    <Border Margin="6,0,0,0" VerticalAlignment="Center" Background="#22222A"
+                    <Border Margin="6,0,0,0" VerticalAlignment="Center" Background="{DynamicResource ElevatedBrush}"
                             CornerRadius="5" Padding="6,2">
                         <TextBlock Text="{Binding SelectedSession.ModelDisplay}" FontSize="10"
                                    Foreground="{DynamicResource TextTertiaryBrush}" />
@@ -166,53 +167,43 @@
             </Grid>
         </Border>
 
-        <!-- 输入区 -->
+        <!-- 输入区（限宽居中） -->
         <Border DockPanel.Dock="Bottom" Background="Transparent" Padding="20,8,20,14">
-            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource CardBorderBrush}"
-                    BorderThickness="1" CornerRadius="12" Padding="10,8,8,8">
+            <Border MaxWidth="760" HorizontalAlignment="Center" Background="{DynamicResource SurfaceBrush}"
+                    BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="12"
+                    Padding="10,8,8,8">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBox x:Name="ChatInput" Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox x:Name="ChatInput" Style="{x:Null}"
+                             Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
                              Background="Transparent" BorderThickness="0"
                              Foreground="{DynamicResource TextPrimaryBrush}" CaretBrush="{DynamicResource AccentBrush}"
                              TextWrapping="Wrap" AcceptsReturn="True" FontSize="13.5" MaxHeight="140"
-                             VerticalScrollBarVisibility="Auto" Padding="4" KeyDown="ChatInput_KeyDown" />
-                    <Button Grid.Column="1" Width="32" Height="32" Margin="8,0,0,0" VerticalAlignment="Bottom"
-                            Cursor="Hand" Command="{Binding SendCommand}">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border x:Name="Bd" Background="{DynamicResource AccentBrush}" CornerRadius="16">
-                                    <TextBlock Text="↑" Foreground="White" FontSize="15" FontWeight="Bold"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentHoverBrush}" />
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Button.Template>
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding InputText}" Value="">
-                                        <Setter Property="Opacity" Value="0.45" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                    </Button>
+                             MinHeight="40" VerticalScrollBarVisibility="Auto" Padding="4,6" KeyDown="ChatInput_KeyDown"
+                             VerticalAlignment="Bottom" />
+                    <Button Grid.Column="1" Style="{StaticResource RoundAccentButton}"
+                            Margin="8,0,0,0" VerticalAlignment="Bottom" />
                 </Grid>
             </Border>
         </Border>
 
-        <!-- 消息列表 -->
-        <ScrollViewer x:Name="MessagesScroll" VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding SelectedSession.Items}"
-                          ItemTemplateSelector="{StaticResource ItemTemplateSelector}" Margin="0,10,0,4" />
+        <!-- 消息列表（限宽居中 + 虚拟化回收：长会话不会一次性渲染全部条目） -->
+        <ScrollViewer x:Name="MessagesScroll" VerticalScrollBarVisibility="Auto" CanContentScroll="True">
+            <Grid MaxWidth="760" HorizontalAlignment="Center" Margin="0,10,0,4">
+                <ItemsControl ItemsSource="{Binding SelectedSession.Items}"
+                              ItemTemplateSelector="{StaticResource ItemTemplateSelector}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel IsVirtualizing="True"
+                                                    VirtualizationMode="Recycling"
+                                                    ScrollUnit="Pixel" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </Grid>
         </ScrollViewer>
     </DockPanel>
 </UserControl>
