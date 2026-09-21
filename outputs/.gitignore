@@ -1,7 +1,6 @@
-# 离屏布局验证：只入库 LayoutCheck 源码；构建输出目录与渲染截图忽略
-ck/
-bk*/
-vv/
-verify*/
-app*/
-*.png
+# 离屏布局验证工具：只入库 layout-check 源码，构建产物与渲染截图忽略
+/*
+!/layout-check/
+layout-check/*.png
+layout-check/bin/
+layout-check/obj/

@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="src/WpfHarness.Harness/WpfHarness.Harness.csproj" />
+  <Project Path="src/WpfHarness/WpfHarness.csproj" />
+  <Project Path="tests/WpfHarness.Harness.Tests/WpfHarness.Harness.Tests.csproj" />
+</Solution>

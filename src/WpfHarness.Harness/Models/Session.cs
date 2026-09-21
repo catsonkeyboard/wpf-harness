@@ -26,7 +26,8 @@ public sealed class Session
 
     public static string DeriveTitle(string userInput)
     {
-        var t = userInput.Replace("\r", " ").Replace("\n", " ").Trim();
+        // CRLF 视为一个空格，避免 Windows 换行在标题里留下双空格
+        var t = userInput.Replace("\r\n", " ").Replace('\r', ' ').Replace('\n', ' ').Trim();
         if (t.Length <= 18) return string.IsNullOrEmpty(t) ? "新任务" : t;
         return t[..18] + "…";
     }
